@@ -38,7 +38,7 @@ O **Log Analyzer & Threat Detector** é uma ferramenta desenvolvida em Python pa
 - **Detecção de Brute Force:** Mapeia endereços IP com um volume anormal de falhas de autenticação (`HTTP 401`).
 - **Identificação de Scans & Recon:** Alerta sobre tentativas massivas de varredura de rotas e diretórios inexistentes (`HTTP 404`).
 - **Análise de Assinaturas de Ataque (Regex):** Identifica *payloads* maliciosos injetados nas requisições HTTP:
-  - **SQL Injection (SQLi)** (ex: `UNION SELECT`, `' OR 1=1`)
+  - **SQL Injection (SQLi)** (ex: `UNION SELECT`)
   - **Path Traversal / Local File Inclusion (LFI)** (ex: `../`, `/etc/passwd`)
   - **Cross-Site Scripting (XSS)** (ex: `<script>`)
 
