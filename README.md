@@ -1,53 +1,56 @@
-<div id="top">
+# Log Analyzer & Threat Detector
 
-<div align="center">
+Ferramenta de linha de comando, feita com a biblioteca padrão do Python, para analisar logs de acesso web no formato Apache/Nginx combined.
 
-# 🛡️ Log Analyzer & Threat Detector
+## Funcionalidades
 
-<em>Analisador de logs de servidores web e detector de anomalias e ameaças de segurança via CLI.</em>
+- Conta respostas HTTP `401` e `404` por endereço de origem.
+- Gera alertas por limiar, considerando o arquivo inteiro ou uma janela temporal opcional.
+- Detecta assinaturas simples de `UNION SELECT`, path traversal, acesso a `/etc/passwd` e `<script>`; as URLs percent-encoded são decodificadas antes da inspeção.
+- Aceita endereços IPv4 e IPv6, informa linhas não reconhecidas e pode emitir relatórios texto ou JSON.
 
-<br>
+As assinaturas são heurísticas básicas e podem gerar falsos positivos ou não detectar variantes. Este projeto não substitui um SIEM, um WAF ou uma revisão de segurança. Respostas `401` e `404`, isoladamente, não comprovam atividade maliciosa.
 
-![Python](https://img.shields.io/badge/Python-3776AB?style=flat-square&logo=python&logoColor=white)
-![Cybersecurity](https://img.shields.io/badge/Cybersecurity-Blue%20Team%20%26%20SIEM-red?style=flat-square)
-![License](https://img.shields.io/badge/License-MIT-blue?style=flat-square)
+## Requisitos
 
-</div>
+- Python 3.7 ou superior.
+- Nenhuma dependência externa.
 
----
+## Uso
 
-## 📋 Sumário
+O arquivo `sample-access.log` é usado quando nenhum caminho é informado:
 
-- [Visão Geral](#-visão-geral)
-- [Funcionalidades](#-funcionalidades)
-- [Pré-requisitos e Instalação](#-pré-requisitos-e-instalação)
-- [Como Usar](#-como-usar)
-- [Estrutura do Projeto](#-estrutura-do-projeto)
-- [Conceitos de Cibersegurança](#-conceitos-de-cibersegurança)
+```bash
+python analyzer.py
+```
 
----
+Informe outro arquivo e ajuste os limiares:
 
-## 🛠️ Visão Geral
+```bash
+python analyzer.py /var/log/nginx/access.log \
+  --failed-login-threshold 5 \
+  --not-found-threshold 10
+```
 
-O **Log Analyzer & Threat Detector** é uma ferramenta desenvolvida em Python para análise automatizada de arquivos de log no padrão Nginx / Apache. O script realiza a varredura do tráfego em busca de comportamentos suspeitos, padrões de varredura maliciosa e tentativas de exploração de vulnerabilidades web (OWASP Top 10).
+Para alertar somente quando os eventos ultrapassarem os limiares dentro de uma janela, use `--window-minutes`:
 
----
+```bash
+python analyzer.py access.log --window-minutes 10
+```
 
-## ✨ Funcionalidades
+Os timestamps precisam estar no formato comum do access log, por exemplo `[13/Oct/2026:10:00:01 +0000]`. Registros sem timestamp válido não entram nos alertas por janela e são contabilizados no relatório.
 
-- **Detecção de Brute Force:** Mapeia endereços IP com um volume anormal de falhas de autenticação (`HTTP 401`).
-- **Identificação de Scans & Recon:** Alerta sobre tentativas massivas de varredura de rotas e diretórios inexistentes (`HTTP 404`).
-- **Análise de Assinaturas de Ataque (Regex):** Identifica *payloads* maliciosos injetados nas requisições HTTP:
-  - **SQL Injection (SQLi)** (ex: `UNION SELECT`)
-  - **Path Traversal / Local File Inclusion (LFI)** (ex: `../`, `/etc/passwd`)
-  - **Cross-Site Scripting (XSS)** (ex: `<script>`)
+Gere JSON no terminal ou salve um relatório em arquivo:
 
----
+```bash
+python analyzer.py access.log --format json
+python analyzer.py access.log --format json --output report.json
+```
 
-## 🚀 Pré-requisitos e Instalação
+Use `python analyzer.py --help` para consultar todas as opções. O parser espera o formato combined com IP/host, timestamp, requisição HTTP entre aspas e código de status; linhas de outros formatos são contabilizadas como não reconhecidas.
 
-A ferramenta utiliza apenas **bibliotecas nativas do Python** (`re`, `collections`), dispensando a instalação de pacotes externos via `pip`.
+## Testes
 
-1. **Clone o repositório:**
-   ```bash
-   git clone git@github.com:canutoV/log-analyzer-py.git
+```bash
+python -m unittest discover -s tests -v
+```
